@@ -1,0 +1,100 @@
+name: Deploy Solution to Dev
+
+on:
+  push:
+    branches:
+      - feature/master
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3.5.3
+
+      - name: Use Node.js 18 (SPFx)
+        uses: actions/setup-node@v3.7.0
+        with:
+          node-version: 18.x
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Bundle & Package
+        run: |
+          gulp bundle --ship
+          gulp package-solution --ship
+
+      - name: List SPPKG
+        run: ls -R sharepoint/solution
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sppkg
+          path: sharepoint/solution/*.sppkg
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download package artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sppkg
+          path: sharepoint/solution
+
+      - name: Use Node.js 22 (CLI)
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.x
+
+      - name: CLI for Microsoft 365 Login
+        uses: pnp/action-cli-login@v3
+        with:
+          CERTIFICATE_ENCODED: ${{ secrets.CERTIFICATE_ENCODED }}
+          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+          APP_ID: ${{ secrets.APP_ID }}
+          TENANT: ${{ secrets.TENANT_ID }}
+
+      - name: Get SPPKG File Name
+        id: getSppkg
+        run: |
+          FILE=$(find sharepoint/solution -name "*.sppkg" -print -quit)
+          echo "SPPKG_PATH=$FILE" >> $GITHUB_ENV
+          echo "Using: $FILE"
+
+      - name: Deploy App to DEV Site Collection App Catalog
+        uses: pnp/action-cli-deploy@v5
+        with:
+          APP_FILE_PATH: ${{ env.SPPKG_PATH }}
+          SKIP_FEATURE_DEPLOYMENT: true
+          OVERWRITE: true
+          SCOPE: sitecollection
+          SITE_COLLECTION_URL: https://piind.sharepoint.com/sites/appdev
+          
+      - name: Send Webhook to Teams Flow
+        if: always()
+        run: |
+          curl -X POST \
+          -H "Content-Type: application/json" \
+          -d '{
+                "attachments": [
+                  {
+                    "contentType": "application/vnd.microsoft.card.adaptive",
+                    "content": {
+                      "user": "${{ github.actor }}",
+                      "time": "${{ steps.info.outputs.time }}",
+                      "project_name": "${{ github.repository_owner }}",
+                      "repo_name": "${{ github.repository }}",
+                      "workflow_name": "${{ github.workflow }}",
+                      "run_id": "${{ github.run_id }}",
+                      "run_number": "${{ github.run_number }}",
+                      "status": "${{ job.status }}",
+                      "branch": "${{ github.ref_name }}"
+                    }
+                  }
+                ]
+              }' \
+          "https://default624e7232a3b54b26911ec1886eb5be.42.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/67e4344eac42421ab0f7429b963d4985/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=fjk9ds9PtEF9jYdREfqHAcQlDRLqL1xU1HzY35PYdqU"
