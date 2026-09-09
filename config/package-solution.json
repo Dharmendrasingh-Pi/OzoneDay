@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "ozone-day-client-side-solution",
+    "id": "c999eafc-7111-47e6-8e5e-686128c36e62",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.18.2"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "OzoneDay description"
+      },
+      "longDescription": {
+        "default": "OzoneDay description"
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "ozone-day Feature",
+        "description": "The feature that activates elements of the ozone-day solution.",
+        "id": "06ea1ef8-6070-4308-846c-72a18a58d70a",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/ozone-day.sppkg"
+  }
+}

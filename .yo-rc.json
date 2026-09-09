@@ -1,0 +1,21 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "nodeVersion": "18.17.1",
+    "sdksVersions": {
+      "@microsoft/microsoft-graph-client": "3.0.2",
+      "@microsoft/teams-js": "2.12.0"
+    },
+    "version": "1.18.2",
+    "libraryName": "ozone-day",
+    "libraryId": "c999eafc-7111-47e6-8e5e-686128c36e62",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "OzoneDay",
+    "solutionShortDescription": "OzoneDay description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "webpart"
+  }
+}
